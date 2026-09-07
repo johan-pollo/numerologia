@@ -1,0 +1,8 @@
+Proyecto Numerología - API 
+Fecha: Lunes 3/08/2026
+Ficha: 3230935 (Mañana)
+Tecnólogo: ADSO
+Integrantes: Johan Javier Galvis Buitrago & Maria Fernanda Gonzalez Diaz
+
+ Fase 1 - Link de repositorio GitHub: 
+https://github.com/johan-pollo/numerologia.git
