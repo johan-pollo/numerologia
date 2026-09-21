@@ -2,6 +2,7 @@ import express from "express";
 
 import {
     crearUsuario,
+    iniciarSesion,
     obtenerUsuarios,
     obtenerUsuario,
     actualizarUsuario,
@@ -11,10 +12,12 @@ import {
 import {
     crearUsuarioValidator,
     actualizarUsuarioValidator,
+    loginValidator,
     idValidator
 } from "../validators/uservalidator.js";
 
 import { validarCampos } from "../middlewares/validarcampos.js";
+import { autenticar } from "../middlewares/autenticacion.js";
 
 const router = express.Router();
 
@@ -24,6 +27,15 @@ router.post(
     validarCampos,
     crearUsuario
 );
+
+router.post(
+    "/login",
+    loginValidator,
+    validarCampos,
+    iniciarSesion
+);
+
+router.use(autenticar);
 
 router.get(
     "/",

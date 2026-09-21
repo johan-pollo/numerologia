@@ -9,7 +9,7 @@ export const crearUsuarioValidator = [
         .notEmpty()
         .withMessage("El email es obligatorio"),
 
-    body("password_hash")
+    body("password")
         .notEmpty()
         .withMessage("La contraseña es obligatoria"),
 
@@ -27,13 +27,23 @@ export const actualizarUsuarioValidator = [
         .notEmpty()
         .withMessage("El email es obligatorio"),
 
-    body("password_hash")
+    body("password")
         .notEmpty()
         .withMessage("La contraseña es obligatoria"),
 
     body("fecha_nacimiento")
         .notEmpty()
         .withMessage("La fecha de nacimiento es obligatoria")
+];
+
+export const loginValidator = [
+    body("email")
+        .isEmail()
+        .withMessage("El email no es válido"),
+
+    body("password")
+        .notEmpty()
+        .withMessage("La contraseña es obligatoria")
 ];
 
 export const idValidator = [
