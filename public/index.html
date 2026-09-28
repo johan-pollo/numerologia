@@ -160,7 +160,7 @@
 
       .columns {
         display: grid;
-        grid-template-columns: 1.15fr 0.85fr;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
         gap: 24px;
       }
 
@@ -196,12 +196,46 @@
         display: block;
       }
 
-      .login-panel form,
+      .auth-tabs {
+        display: flex;
+        gap: 18px;
+        margin: 0 0 18px;
+        border-bottom: 1px solid #ead8d2;
+      }
+
+      .auth-tab {
+        padding: 0 2px 10px;
+        border: 0;
+        border-bottom: 3px solid transparent;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        font: 700 0.9rem Arial, sans-serif;
+      }
+
+      .auth-tab[aria-pressed="true"] {
+        border-bottom-color: var(--teal);
+        color: var(--teal-dark);
+      }
+
+      .login-panel form:not(.register-form),
       .profile-form {
         display: grid;
         grid-template-columns: 1fr 1fr auto;
         gap: 12px;
         align-items: end;
+      }
+
+      .register-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        align-items: end;
+      }
+
+      .register-form .auth-submit {
+        grid-column: 1 / -1;
+        justify-self: start;
       }
 
       label {
@@ -313,8 +347,18 @@
 
         .columns,
         .login-panel form,
+        .register-form,
         .profile-form {
           grid-template-columns: 1fr;
+        }
+
+        .columns {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .register-form .auth-submit {
+          grid-column: auto;
+          justify-self: stretch;
         }
 
         .hero {
@@ -353,13 +397,31 @@
       </section>
 
       <section class="login-panel visible" id="loginPanel">
-        <h2>Acceso al dashboard</h2>
-        <form id="loginForm">
-          <label>Email<input id="email" name="email" type="email" required placeholder="tu@email.com" /></label>
-          <label>Contraseña<input id="password" name="password" type="password" required placeholder="••••••••" /></label>
-          <button class="button" type="submit">Ingresar</button>
-        </form>
-        <p class="feedback" id="loginFeedback"></p>
+        <div class="auth-tabs" aria-label="Acceso y registro">
+          <button class="auth-tab" id="loginTab" type="button" aria-pressed="true" aria-controls="loginView">Ingresar</button>
+          <button class="auth-tab" id="registerTab" type="button" aria-pressed="false" aria-controls="registerView">Crear cuenta</button>
+        </div>
+        <div id="loginView">
+          <h2>Acceso al dashboard</h2>
+          <form id="loginForm">
+            <label>Email<input id="email" name="email" type="email" autocomplete="email" required placeholder="tu@email.com" /></label>
+            <label>Contraseña<input id="password" name="password" type="password" autocomplete="current-password" required placeholder="••••••••" /></label>
+            <button class="button" type="submit">Ingresar</button>
+          </form>
+          <p class="feedback" id="loginFeedback" aria-live="polite"></p>
+        </div>
+        <div id="registerView" hidden>
+          <h2>Crear cuenta</h2>
+          <form class="register-form" id="registerForm">
+            <label>Nombre completo<input name="nombre_completo" type="text" autocomplete="name" maxlength="120" required /></label>
+            <label>Email<input name="email" type="email" autocomplete="email" required placeholder="tu@email.com" /></label>
+            <label>Fecha de nacimiento<input name="fecha_nacimiento" type="date" autocomplete="bday" required /></label>
+            <label>Contraseña<input name="password" type="password" autocomplete="new-password" required /></label>
+            <label>Confirmar contraseña<input name="confirmar_password" type="password" autocomplete="new-password" required /></label>
+            <button class="button auth-submit" id="registerSubmit" type="submit">Crear cuenta</button>
+          </form>
+          <p class="feedback" id="registerFeedback" aria-live="polite"></p>
+        </div>
       </section>
 
       <section class="grid">
@@ -421,9 +483,14 @@
       const tokenKey = "numerologia_token";
       const userKey = "numerologia_usuario";
       const loginPanel = document.querySelector("#loginPanel");
+      const loginTab = document.querySelector("#loginTab");
+      const registerTab = document.querySelector("#registerTab");
+      const loginView = document.querySelector("#loginView");
+      const registerView = document.querySelector("#registerView");
       const logoutButton = document.querySelector("#logoutButton");
       const statusMessage = document.querySelector("#statusMessage");
       const loginFeedback = document.querySelector("#loginFeedback");
+      const registerFeedback = document.querySelector("#registerFeedback");
       const profileFeedback = document.querySelector("#profileFeedback");
 
       const getToken = () => localStorage.getItem(tokenKey);
@@ -444,8 +511,19 @@
           }
         });
         const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.mensaje || "No se pudo completar la solicitud.");
+        if (!response.ok) {
+          const errores = data.errores?.map((error) => error.mensaje).filter(Boolean).join(". ");
+          throw new Error(errores || data.mensaje || "No se pudo completar la solicitud.");
+        }
         return data;
+      }
+
+      function mostrarVistaAcceso(vista) {
+        const mostrarLogin = vista === "login";
+        loginView.hidden = !mostrarLogin;
+        registerView.hidden = mostrarLogin;
+        loginTab.setAttribute("aria-pressed", String(mostrarLogin));
+        registerTab.setAttribute("aria-pressed", String(!mostrarLogin));
       }
 
       function renderProfiles(profiles) {
@@ -490,6 +568,47 @@
           await loadDashboard();
         } catch (error) {
           setFeedback(loginFeedback, error.message, true);
+        }
+      });
+
+      loginTab.addEventListener("click", () => mostrarVistaAcceso("login"));
+      registerTab.addEventListener("click", () => mostrarVistaAcceso("register"));
+
+      document.querySelector("#registerForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const formData = new FormData(form);
+        const password = formData.get("password");
+
+        if (password !== formData.get("confirmar_password")) {
+          setFeedback(registerFeedback, "Las contraseñas no coinciden.", true);
+          return;
+        }
+
+        const submitButton = document.querySelector("#registerSubmit");
+        submitButton.disabled = true;
+        setFeedback(registerFeedback, "Creando cuenta...");
+
+        try {
+          await request("/api/usuarios", {
+            method: "POST",
+            body: JSON.stringify({
+              nombre_completo: String(formData.get("nombre_completo")).trim(),
+              email: String(formData.get("email")).trim(),
+              password,
+              fecha_nacimiento: formData.get("fecha_nacimiento")
+            })
+          });
+
+          form.reset();
+          document.querySelector("#email").value = String(formData.get("email")).trim();
+          mostrarVistaAcceso("login");
+          setFeedback(registerFeedback, "");
+          setFeedback(loginFeedback, "Cuenta creada. Inicia sesión con tu email y contraseña.");
+        } catch (error) {
+          setFeedback(registerFeedback, error.message, true);
+        } finally {
+          submitButton.disabled = false;
         }
       });
 

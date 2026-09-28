@@ -19,6 +19,12 @@ export const crearUsuario = async (req, res) => {
             usuario: usuarioRespuesta
         });
     } catch (error) {
+        if (error.code === 11000 && error.keyPattern?.email) {
+            return res.status(409).json({
+                mensaje: "Ya existe una cuenta con ese email"
+            });
+        }
+
         res.status(500).json({
             mensaje: "Error al crear el usuario"
         });
