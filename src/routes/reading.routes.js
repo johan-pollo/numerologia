@@ -8,7 +8,7 @@ import {
     eliminarLectura
 } from "../controllers/reading.controller.js";
 
-import { idValidator } from "../validators/uservalidator.js";
+import { crearLecturaValidator, idValidator } from "../validators/uservalidator.js";
 import { validarCampos } from "../middlewares/validarcampos.js";
 import { autenticar } from "../middlewares/autenticacion.js";
 
@@ -18,6 +18,8 @@ router.use(autenticar);
 
 router.post(
     "/",
+    crearLecturaValidator,
+    validarCampos,
     crearLectura
 );
 

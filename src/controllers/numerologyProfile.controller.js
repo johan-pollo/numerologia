@@ -11,8 +11,7 @@ export const crearPerfil = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({
-            mensaje: "Error al crear el perfil numerológico",
-            error: error.message
+            mensaje: "Error al crear el perfil numerológico"
         });
     }
 };
@@ -24,8 +23,7 @@ export const obtenerPerfiles = async (req, res) => {
         res.status(200).json(perfiles);
     } catch (error) {
         res.status(500).json({
-            mensaje: "Error al obtener los perfiles numerológicos",
-            error: error.message
+            mensaje: "Error al obtener los perfiles numerológicos"
         });
     }
 };
@@ -43,8 +41,7 @@ export const obtenerPerfil = async (req, res) => {
         res.status(200).json(perfil);
     } catch (error) {
         res.status(500).json({
-            mensaje: "Error al obtener el perfil numerológico",
-            error: error.message
+            mensaje: "Error al obtener el perfil numerológico"
         });
     }
 };
@@ -69,8 +66,7 @@ export const actualizarPerfil = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({
-            mensaje: "Error al actualizar el perfil numerológico",
-            error: error.message
+            mensaje: "Error al actualizar el perfil numerológico"
         });
     }
 };
@@ -90,8 +86,7 @@ export const eliminarPerfil = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({
-            mensaje: "Error al eliminar el perfil numerológico",
-            error: error.message
+            mensaje: "Error al eliminar el perfil numerológico"
         });
     }
 };

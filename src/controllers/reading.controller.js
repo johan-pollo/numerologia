@@ -11,8 +11,7 @@ export const crearLectura = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({
-            mensaje: "Error al crear la lectura",
-            error: error.message
+            mensaje: "Error al crear la lectura"
         });
     }
 };
@@ -24,8 +23,7 @@ export const obtenerLecturas = async (req, res) => {
         res.status(200).json(lecturas);
     } catch (error) {
         res.status(500).json({
-            mensaje: "Error al obtener las lecturas",
-            error: error.message
+            mensaje: "Error al obtener las lecturas"
         });
     }
 };
@@ -43,8 +41,7 @@ export const obtenerLectura = async (req, res) => {
         res.status(200).json(lectura);
     } catch (error) {
         res.status(500).json({
-            mensaje: "Error al obtener la lectura",
-            error: error.message
+            mensaje: "Error al obtener la lectura"
         });
     }
 };
@@ -69,8 +66,7 @@ export const actualizarLectura = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({
-            mensaje: "Error al actualizar la lectura",
-            error: error.message
+            mensaje: "Error al actualizar la lectura"
         });
     }
 };
@@ -90,8 +86,7 @@ export const eliminarLectura = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({
-            mensaje: "Error al eliminar la lectura",
-            error: error.message
+            mensaje: "Error al eliminar la lectura"
         });
     }
 };

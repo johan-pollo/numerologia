@@ -20,8 +20,7 @@ export const crearUsuario = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({
-            mensaje: "Error al crear el usuario",
-            error: error.message
+            mensaje: "Error al crear el usuario"
         });
     }
 };
@@ -47,8 +46,7 @@ export const iniciarSesion = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({
-            mensaje: "Error al iniciar sesión",
-            error: error.message
+            mensaje: "Error al iniciar sesión"
         });
     }
 };
@@ -60,8 +58,7 @@ export const obtenerUsuarios = async (req, res) => {
         res.status(200).json(usuarios);
     } catch (error) {
         res.status(500).json({
-            mensaje: "Error al obtener los usuarios",
-            error: error.message
+            mensaje: "Error al obtener los usuarios"
         });
     }
 };
@@ -79,8 +76,7 @@ export const obtenerUsuario = async (req, res) => {
         res.status(200).json(usuario);
     } catch (error) {
         res.status(500).json({
-            mensaje: "Error al obtener el usuario",
-            error: error.message
+            mensaje: "Error al obtener el usuario"
         });
     }
 };
@@ -115,8 +111,7 @@ export const actualizarUsuario = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({
-            mensaje: "Error al actualizar el usuario",
-            error: error.message
+            mensaje: "Error al actualizar el usuario"
         });
     }
 };
@@ -136,8 +131,7 @@ export const eliminarUsuario = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({
-            mensaje: "Error al eliminar el usuario",
-            error: error.message
+            mensaje: "Error al eliminar el usuario"
         });
     }
 };

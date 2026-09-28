@@ -12,11 +12,15 @@ app.use(express.json());
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
-  res.redirect("/dashboard.html");
+  res.sendFile(path.resolve("public/index.html"));
 });
 
 app.get("/dashboard", (req, res) => {
-  res.sendFile(path.resolve("public/dashboard.html"));
+  res.sendFile(path.resolve("public/index.html"));
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ estado: "ok", servicio: "api-numerologia" });
 });
 
 app.use("/api/usuarios", usuarioRoutes);
@@ -24,5 +28,20 @@ app.use("/api/perfiles", numerologyProfileRoutes);
 app.use("/api/lecturas", readingRoutes);
 app.use("/api/compatibilidades", compatibilityMatchRoutes);
 app.use("/api/auditoria", auditLogRoutes);
+
+app.use("/api", (req, res) => {
+  res.status(404).json({ mensaje: "Ruta no encontrada" });
+});
+
+app.use((error, req, res, next) => {
+  const status = error.status >= 400 && error.status < 500 ? error.status : 500;
+  const mensaje = status === 400
+    ? "Solicitud JSON inválida"
+    : status < 500
+      ? "Solicitud inválida"
+      : "Error interno del servidor";
+
+  res.status(status).json({ mensaje });
+});
 
 export default app;

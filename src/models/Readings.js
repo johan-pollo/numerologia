@@ -14,7 +14,8 @@ const readingsSchema = new mongoose.Schema({
     tipo_lectura: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        enum: ["diaria", "general", "anual"]
     },
     fecha: {
         type: Date,
