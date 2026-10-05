@@ -1,16 +1,21 @@
+import dns from "node:dns";
 import mongoose from "mongoose";
 
-const conectar = async () => {
-    const uri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/numerologia";
+export default async function conectar() {
+  const uri = process.env.MONGODB_URI;
+  const dnsServers = process.env.MONGODB_DNS_SERVERS;
 
-    await mongoose.connect(uri, {
-        serverSelectionTimeoutMS: 5000,
-        retryWrites: true,
-        w: "majority"
-    });
+  if (!uri) {
+    throw new Error("Falta configurar la variable MONGODB_URI");
+  }
 
-    console.log("Conectado a MongoDB");
-    return mongoose.connection;
-};
+  if (dnsServers) {
+    dns.setServers(dnsServers.split(",").map((server) => server.trim()));
+  }
 
-export default conectar;
+  await mongoose.connect(uri, {
+    dbName: process.env.MONGODB_DB_NAME || "numerologia"
+  });
+
+  console.log(`MongoDB conectado a la base de datos ${mongoose.connection.name}`);
+}

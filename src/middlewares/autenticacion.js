@@ -26,6 +26,10 @@ export const autenticar = (req, res, next) => {
 
     try {
         const payload = jwt.verify(token, obtenerSecreto());
+        if (typeof payload.usuarioId !== "string") {
+            throw new Error("Token sin ID de usuario");
+        }
+
         req.usuarioId = payload.usuarioId;
         next();
     } catch {

@@ -158,12 +158,6 @@
         font: 0.86rem/1.4 Arial, sans-serif;
       }
 
-      .columns {
-        display: grid;
-        grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-        gap: 24px;
-      }
-
       .panel {
         padding: 24px;
         border: 1px solid var(--line);
@@ -221,7 +215,7 @@
       .login-panel form:not(.register-form),
       .profile-form {
         display: grid;
-        grid-template-columns: 1fr 1fr auto;
+        grid-template-columns: auto;
         gap: 12px;
         align-items: end;
       }
@@ -308,33 +302,6 @@
         color: #496176;
       }
 
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font: 0.88rem Arial, sans-serif;
-      }
-
-      th,
-      td {
-        padding: 13px 8px;
-        border-bottom: 1px solid var(--line);
-        text-align: left;
-      }
-
-      th {
-        color: var(--muted);
-        font-size: 0.7rem;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-      }
-
-      .empty {
-        padding: 28px 0;
-        color: var(--muted);
-        font: 0.9rem Arial, sans-serif;
-        text-align: center;
-      }
-
       @media (max-width: 760px) {
         .topbar,
         .hero {
@@ -345,15 +312,10 @@
           align-items: flex-start;
         }
 
-        .columns,
         .login-panel form,
         .register-form,
         .profile-form {
           grid-template-columns: 1fr;
-        }
-
-        .columns {
-          grid-template-columns: minmax(0, 1fr);
         }
 
         .register-form .auth-submit {
@@ -369,9 +331,6 @@
           margin-top: 22px;
         }
 
-        .table-wrap {
-          overflow-x: auto;
-        }
       }
     </style>
   </head>
@@ -416,8 +375,8 @@
             <label>Nombre completo<input name="nombre_completo" type="text" autocomplete="name" maxlength="120" required /></label>
             <label>Email<input name="email" type="email" autocomplete="email" required placeholder="tu@email.com" /></label>
             <label>Fecha de nacimiento<input name="fecha_nacimiento" type="date" autocomplete="bday" required /></label>
-            <label>Contraseña<input name="password" type="password" autocomplete="new-password" required /></label>
-            <label>Confirmar contraseña<input name="confirmar_password" type="password" autocomplete="new-password" required /></label>
+            <label>Contraseña<input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required /></label>
+            <label>Confirmar contraseña<input name="confirmar_password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required /></label>
             <button class="button auth-submit" id="registerSubmit" type="submit">Crear cuenta</button>
           </form>
           <p class="feedback" id="registerFeedback" aria-live="polite"></p>
@@ -425,12 +384,6 @@
       </section>
 
       <section class="grid">
-        <div class="card">
-          <h3>Perfiles</h3>
-          <div class="numero" id="profileCount">0</div>
-          <div class="mini">Perfiles registrados en tu cuenta.</div>
-        </div>
-
         <div class="card">
           <h3>Número de vida</h3>
           <div class="numero" id="lifeNumber">-</div>
@@ -450,33 +403,14 @@
         </div>
       </section>
 
-      <div class="columns">
-        <section class="panel">
-          <h2>Perfiles recientes</h2>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr><th>Perfil</th><th>Vida</th><th>Expresión</th><th>Alma</th></tr>
-              </thead>
-              <tbody id="profilesTable">
-                <tr><td colspan="4" class="empty">Inicia sesión para consultar perfiles.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section class="panel">
-          <h2>Nuevo perfil</h2>
-          <p>Registra los números principales de un perfil asociado a tu usuario.</p>
-          <form class="profile-form" id="profileForm">
-            <label>Vida<input name="numero_vida" type="number" min="1" max="99" required /></label>
-            <label>Expresión<input name="numero_expresion" type="number" min="1" max="99" required /></label>
-            <label>Alma<input name="numero_alma" type="number" min="1" max="99" required /></label>
-            <button class="button" type="submit">Guardar perfil</button>
-          </form>
-          <p class="feedback" id="profileFeedback"></p>
-        </section>
-      </div>
+      <section class="panel">
+        <h2>Calcular mi perfil</h2>
+        <p>Calcula o actualiza tus números con el nombre y la fecha de nacimiento de tu cuenta.</p>
+        <form class="profile-form" id="profileForm">
+          <button class="button" type="submit">Calcular perfil</button>
+        </form>
+        <p class="feedback" id="profileFeedback"></p>
+      </section>
     </div>
 
     <script>
@@ -513,7 +447,9 @@
         const data = await response.json().catch(() => ({}));
         if (!response.ok) {
           const errores = data.errores?.map((error) => error.mensaje).filter(Boolean).join(". ");
-          throw new Error(errores || data.mensaje || "No se pudo completar la solicitud.");
+          const error = new Error(errores || data.mensaje || "No se pudo completar la solicitud.");
+          error.status = response.status;
+          throw error;
         }
         return data;
       }
@@ -526,24 +462,22 @@
         registerTab.setAttribute("aria-pressed", String(!mostrarLogin));
       }
 
-      function renderProfiles(profiles) {
-        document.querySelector("#profileCount").textContent = profiles.length;
-        const latest = profiles[profiles.length - 1];
-        document.querySelector("#lifeNumber").textContent = latest?.numero_vida ?? "-";
-        document.querySelector("#expressionNumber").textContent = latest?.numero_expresion ?? "-";
-        document.querySelector("#soulNumber").textContent = latest?.numero_alma ?? "-";
-        document.querySelector("#profilesTable").innerHTML = profiles.length
-          ? profiles.slice(-6).reverse().map((profile, index) => `
-              <tr><td>Perfil ${profiles.length - index}</td><td>${profile.numero_vida}</td><td>${profile.numero_expresion}</td><td>${profile.numero_alma}</td></tr>
-            `).join("")
-          : '<tr><td colspan="4" class="empty">Todavía no hay perfiles registrados.</td></tr>';
+      function renderProfile(profile) {
+        document.querySelector("#lifeNumber").textContent = profile?.numero_vida ?? "-";
+        document.querySelector("#expressionNumber").textContent = profile?.numero_expresion ?? "-";
+        document.querySelector("#soulNumber").textContent = profile?.numero_alma ?? "-";
       }
 
       async function loadDashboard() {
         if (!getToken()) return;
         try {
-          const profiles = await request("/api/perfiles");
-          renderProfiles(profiles);
+          let profile = null;
+          try {
+            profile = await request("/api/v1/numerology/profile");
+          } catch (error) {
+            if (error.status !== 404) throw error;
+          }
+          renderProfile(profile);
           statusMessage.textContent = `Sesión activa${getUser()?.nombre_completo ? ` · ${getUser().nombre_completo}` : ""}.`;
         } catch (error) {
           statusMessage.textContent = error.message;
@@ -556,7 +490,7 @@
         setFeedback(loginFeedback, "Validando acceso...");
         const formData = new FormData(event.currentTarget);
         try {
-          const data = await request("/api/usuarios/login", {
+          const data = await request("/api/v1/auth/login", {
             method: "POST",
             body: JSON.stringify({ email: formData.get("email"), password: formData.get("password") })
           });
@@ -590,7 +524,7 @@
         setFeedback(registerFeedback, "Creando cuenta...");
 
         try {
-          await request("/api/usuarios", {
+          await request("/api/v1/auth/register", {
             method: "POST",
             body: JSON.stringify({
               nombre_completo: String(formData.get("nombre_completo")).trim(),
@@ -615,22 +549,20 @@
       document.querySelector("#profileForm").addEventListener("submit", async (event) => {
         event.preventDefault();
         if (!getToken()) return setFeedback(profileFeedback, "Primero inicia sesión.", true);
-        const formData = new FormData(event.currentTarget);
+        const submitButton = event.currentTarget.querySelector("button[type='submit']");
+        submitButton.disabled = true;
+        setFeedback(profileFeedback, "Calculando perfil...");
         try {
-          await request("/api/perfiles", {
+          await request("/api/v1/numerology/calculate", {
             method: "POST",
-            body: JSON.stringify({
-              usuario: getUser()?._id,
-              numero_vida: Number(formData.get("numero_vida")),
-              numero_expresion: Number(formData.get("numero_expresion")),
-              numero_alma: Number(formData.get("numero_alma"))
-            })
+            body: JSON.stringify({})
           });
-          event.currentTarget.reset();
-          setFeedback(profileFeedback, "Perfil guardado correctamente.");
+          setFeedback(profileFeedback, "Perfil calculado correctamente.");
           await loadDashboard();
         } catch (error) {
           setFeedback(profileFeedback, error.message, true);
+        } finally {
+          submitButton.disabled = false;
         }
       });
 

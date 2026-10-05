@@ -1,8 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import jwt from 'jsonwebtoken';
+import { validationResult } from 'express-validator';
 import app from '../app.js';
+import { crearPerfilValidator } from '../src/validators/uservalidator.js';
 
+process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET ??= 'test-secret';
 const token = jwt.sign({ usuarioId: '6ab14844f3428cb9fb9c90e3' }, process.env.JWT_SECRET);
 
@@ -17,6 +20,27 @@ test('La aplicación Express se crea correctamente', () => {
   assert.equal(typeof app.listen, 'function');
 });
 
+test('Las rutas versionadas de autenticación son públicas y el perfil requiere JWT', async () => {
+  const server = await iniciarServidor();
+  const { port } = server.address();
+
+  try {
+    const registro = await fetch(`http://127.0.0.1:${port}/api/v1/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}'
+    });
+    const perfil = await fetch(`http://127.0.0.1:${port}/api/v1/numerology/profile`);
+    const historial = await fetch(`http://127.0.0.1:${port}/api/v1/readings/history`);
+
+    assert.equal(registro.status, 400);
+    assert.equal(perfil.status, 401);
+    assert.equal(historial.status, 401);
+  } finally {
+    server.close();
+  }
+});
+
 test('El dashboard HTML de numerología responde correctamente', async () => {
   const server = await iniciarServidor();
   const { port } = server.address();
@@ -27,6 +51,10 @@ test('El dashboard HTML de numerología responde correctamente', async () => {
 
     assert.equal(respuesta.status, 200);
     assert.match(html, /Numerología|dashboard/i);
+    assert.match(html, /id="lifeNumber"/);
+    assert.match(html, /id="expressionNumber"/);
+    assert.match(html, /id="soulNumber"/);
+    assert.doesNotMatch(html, /profileCount|profilesTable/);
   } finally {
     server.close();
   }
@@ -52,6 +80,23 @@ test('El JSON malformado responde 400 sin exponer el stack', async () => {
   }
 });
 
+test('El parser limita el tamaño de solicitudes JSON', async () => {
+  const server = await iniciarServidor();
+  const { port } = server.address();
+
+  try {
+    const respuesta = await fetch(`http://127.0.0.1:${port}/api/v1/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contenido: 'x'.repeat(17 * 1024) })
+    });
+
+    assert.equal(respuesta.status, 413);
+  } finally {
+    server.close();
+  }
+});
+
 test('El registro rechaza tipos incorrectos y nombres en blanco', async () => {
   const server = await iniciarServidor();
   const { port } = server.address();
@@ -69,6 +114,50 @@ test('El registro rechaza tipos incorrectos y nombres en blanco', async () => {
 
       assert.equal(respuesta.status, 400);
     }
+  } finally {
+    server.close();
+  }
+});
+
+test('El registro rechaza contraseñas que exceden el límite de bcrypt', async () => {
+  const server = await iniciarServidor();
+  const { port } = server.address();
+
+  try {
+    const respuesta = await fetch(`http://127.0.0.1:${port}/api/v1/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nombre_completo: 'Ana Pérez',
+        email: 'ana@example.com',
+        password: '😀'.repeat(19),
+        fecha_nacimiento: '1995-08-21'
+      })
+    });
+
+    assert.equal(respuesta.status, 400);
+  } finally {
+    server.close();
+  }
+});
+
+test('El registro exige un mínimo de ocho caracteres en la contraseña', async () => {
+  const server = await iniciarServidor();
+  const { port } = server.address();
+
+  try {
+    const respuesta = await fetch(`http://127.0.0.1:${port}/api/v1/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nombre_completo: 'Ana Pérez',
+        email: 'ana@example.com',
+        password: 'corta7',
+        fecha_nacimiento: '1995-08-21'
+      })
+    });
+
+    assert.equal(respuesta.status, 400);
   } finally {
     server.close();
   }
@@ -105,7 +194,10 @@ test('La creación de perfil valida ObjectId y números antes de MongoDB', async
     for (const body of [
       { usuario: '123abc_', numero_vida: 5, numero_expresion: 3, numero_alma: 7 },
       { usuario: '6ab14844f3428cb9fb9c90e3', numero_vida: 'cinco', numero_expresion: 3, numero_alma: 7 },
-      { usuario: '6ab14844f3428cb9fb9c90e3', numero_expresion: 3, numero_alma: 7 }
+      { usuario: '6ab14844f3428cb9fb9c90e3', numero_expresion: 3, numero_alma: 7 },
+      { usuario: '6ab14844f3428cb9fb9c90e3', numero_vida: 10000000000, numero_expresion: 3, numero_alma: 7 },
+      { usuario: '6ab14844f3428cb9fb9c90e3', numero_vida: 1.5, numero_expresion: 3, numero_alma: 7 },
+      { usuario: '6ab14844f3428cb9fb9c90e3', numero_vida: 0, numero_expresion: 3, numero_alma: 7 }
     ]) {
       const respuesta = await fetch(`http://127.0.0.1:${port}/api/perfiles`, {
         method: 'POST',
@@ -118,6 +210,21 @@ test('La creación de perfil valida ObjectId y números antes de MongoDB', async
   } finally {
     server.close();
   }
+});
+
+test('La creación de perfil acepta números de hasta 10 dígitos', async () => {
+  const req = {
+    body: {
+        usuario: '6ab14844f3428cb9fb9c90e3',
+        numero_vida: 9999999999,
+        numero_expresion: 3,
+        numero_alma: 7
+    }
+  };
+
+  await Promise.all(crearPerfilValidator.map((validator) => validator.run(req)));
+
+  assert.equal(validationResult(req).isEmpty(), true);
 });
 
 test('La creación de lectura rechaza tipos fuera de los permitidos', async () => {

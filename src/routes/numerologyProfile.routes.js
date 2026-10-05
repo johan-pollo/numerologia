@@ -8,7 +8,11 @@ import {
     eliminarPerfil
 } from "../controllers/numerologyProfile.controller.js";
 
-import { crearPerfilValidator, idValidator } from "../validators/uservalidator.js";
+import {
+    crearPerfilValidator,
+    actualizarPerfilValidator,
+    idValidator
+} from "../validators/uservalidator.js";
 import { validarCampos } from "../middlewares/validarcampos.js";
 import { autenticar } from "../middlewares/autenticacion.js";
 
@@ -38,6 +42,7 @@ router.get(
 router.put(
     "/:id",
     idValidator,
+    actualizarPerfilValidator,
     validarCampos,
     actualizarPerfil
 );

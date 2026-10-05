@@ -6,18 +6,43 @@ API REST para gestionar usuarios, perfiles numerologicos, lecturas, compatibilid
 
 ### Requisitos
 
-- Node.js 18 o superior.
-- MongoDB local o MongoDB Atlas.
-- Una variable `JWT_SECRET` configurada.
+- Node.js 20.19 o superior (requisito de Mongoose 9).
+- npm (incluido con Node.js).
+- Un cluster de MongoDB Atlas, o una instancia local de MongoDB.
+- Usuario de base de datos y acceso de red configurados en Atlas.
 
 ### Instalacion
 
 ```bash
 npm install
+```
+
+En Windows, crea el archivo local de variables de entorno:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Edita `.env` y configura la URI del cluster, la base de datos y una clave JWT privada. Ejemplo de estructura (reemplaza los marcadores; no publiques credenciales):
+
+```env
+PORT=3001
+MONGODB_URI=mongodb+srv://<usuario>:<contrasena>@<cluster>.mongodb.net/?appName=vuelos
+MONGODB_DB_NAME=numerologia
+JWT_SECRET=usa-una-clave-privada-de-al-menos-32-bytes
+```
+
+En Atlas, permite la IP desde la que se ejecuta la API en **Network Access** y crea el usuario de base de datos en **Database Access**. Si la contrasena contiene caracteres especiales, codificalos para una URI. La aplicacion conecta Mongoose a la base indicada por `MONGODB_DB_NAME` y solo despues inicia el servidor.
+
+Si el DNS de tu red no resuelve el registro SRV del cluster, puedes definir opcionalmente `MONGODB_DNS_SERVERS` con uno o varios servidores DNS separados por comas.
+
+Inicia la API:
+
+```bash
 npm start
 ```
 
-Para desarrollo:
+Para desarrollo con reinicio automatico:
 
 ```bash
 npm run dev
@@ -30,6 +55,47 @@ La interfaz web esta disponible en:
 ```text
 http://localhost:3001/
 ```
+
+## Ejecucion con Docker
+
+Construye la imagen y ejecuta el contenedor pasando las variables desde el archivo local `.env`:
+
+```bash
+docker build -t api-numerologia .
+docker run --rm --name api-numerologia --env-file .env -p 3001:3001 api-numerologia
+```
+
+La imagen usa un usuario no privilegiado y comprueba `/health`. Si MongoDB se ejecuta en el mismo equipo y no en Atlas, usa `host.docker.internal` en `MONGODB_URI` desde el contenedor.
+
+### Tecnologias y estructura
+
+- **Node.js y Express 5:** servidor HTTP, API REST y entrega de la interfaz estatica.
+- **MongoDB Atlas y Mongoose 9:** persistencia, esquemas y modelos de datos.
+- **dotenv:** carga de configuracion desde `.env`.
+- **JSON Web Token y bcryptjs:** autenticacion y manejo seguro de contrasenas.
+- **express-validator:** validacion de solicitudes.
+- **Node.js Test Runner:** pruebas automatizadas con `node --test`.
+
+```text
+app.js                 Configuracion de Express, rutas y manejo de errores
+server.js              Conexion a MongoDB e inicio del servidor
+src/
+  controllers/         Logica de usuarios, perfiles, lecturas y auditoria
+  database/            Conexion con MongoDB Atlas mediante Mongoose
+  middlewares/         Autenticacion y validacion compartida
+  models/              Esquemas y modelos de Mongoose
+  routes/              Endpoints de la API
+  validators/          Reglas de validacion
+public/                Interfaz web estatica
+tests/                 Pruebas automatizadas
+.env.example           Plantilla de configuracion local
+```
+
+### Cambios de esta configuracion
+
+- La conexion usa Mongoose, igual que los modelos del proyecto, y selecciona la base `numerologia` mediante `MONGODB_DB_NAME`.
+- Las credenciales se leen desde `.env`; el archivo esta excluido de Git. No guardes URI ni claves reales en el README o en `.env.example`.
+- El servidor espera una conexion exitosa antes de escuchar solicitudes y termina con un error claro si falla la conexion.
 
 Tambien se conserva `http://localhost:3001/dashboard` como alias compatible. El archivo de entrada del frontend es `public/index.html`, para facilitar su despliegue como sitio estatico.
 
@@ -55,12 +121,13 @@ Para usar Dev Tunnels, crea o configura el tunel sobre el puerto `3001`. La URL 
 Crea un archivo `.env` en la raiz del proyecto:
 
 ```env
-PORT=3000
-MONGO_URI=mongodb://127.0.0.1:27017/numerologia
-JWT_SECRET=cambia-esta-clave-por-una-secreta-y-larga
+PORT=3001
+MONGODB_URI=mongodb://127.0.0.1:27017
+MONGODB_DB_NAME=numerologia
+JWT_SECRET=usa-una-clave-privada-de-al-menos-32-bytes
 ```
 
-Para MongoDB Atlas, reemplaza `MONGO_URI` por la cadena de conexion de tu cluster. No compartas el archivo `.env` ni publiques sus credenciales.
+Para MongoDB Atlas, reemplaza `MONGODB_URI` por la cadena de conexion de tu cluster. La aplicacion exige `MONGODB_URI` y un `JWT_SECRET` de al menos 32 bytes antes de iniciar. No compartas el archivo `.env` ni publiques sus credenciales.
 
 ## Configuracion para compartir la API
 
@@ -70,7 +137,7 @@ Reemplaza la URL base en los ejemplos por la URL de tu servicio desplegado:
 https://tu-dominio.example.com
 ```
 
-La API no agrega automaticamente el prefijo `/api/v1`. Las rutas publicadas actualmente comienzan con `/api`.
+Las rutas principales de autenticacion y numerologia usan el prefijo versionado `/api/v1`. Las rutas CRUD originales bajo `/api` se conservan por compatibilidad.
 
 ## Autenticacion
 
@@ -83,6 +150,52 @@ Authorization: Bearer TU_TOKEN
 ```
 
 No uses `x-token` ni la pestaña Auth del tipo Basic. El token expira en 2 horas.
+
+## API versionada principal
+
+### Registrar e iniciar sesion
+
+```http
+POST /api/v1/auth/register
+POST /api/v1/auth/login
+Content-Type: application/json
+```
+
+El registro recibe `nombre_completo`, `email`, `password` y `fecha_nacimiento`. La contraseña debe tener al menos 8 caracteres y no superar 72 bytes. El inicio de sesion devuelve el JWT y los datos publicos del usuario.
+
+### Calcular y consultar el perfil numerologico
+
+```http
+POST /api/v1/numerology/calculate
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{}
+```
+
+El servidor calcula `numero_vida`, `numero_expresion` y `numero_alma` con el metodo pitagorico a partir del nombre completo y la fecha de nacimiento guardados en la cuenta. Reduce los resultados a un digito y conserva los numeros maestros 11, 22 y 33. Recalcular actualiza el perfil asociado al usuario autenticado.
+
+```http
+GET /api/v1/numerology/profile
+Authorization: Bearer <token>
+```
+
+Responde `404` si todavia no se ha calculado un perfil.
+
+### Historial de lecturas (solo consulta)
+
+```http
+GET /api/v1/readings/history
+Authorization: Bearer <token>
+```
+
+La generacion de lecturas, la integracion con Gemini y la interpretacion de compatibilidad quedan aplazadas y no forman parte de esta version.
+
+Las solicitudes JSON tienen un limite de 16 KB. Los recursos privados se consultan y modifican solo dentro del alcance del usuario autenticado. La auditoria se genera automaticamente para solicitudes autenticadas y sus registros no se pueden crear o modificar manualmente.
+
+## Rutas CRUD legadas (`/api`)
+
+Se conservan las rutas CRUD originales documentadas a continuacion por compatibilidad. Para registro, inicio de sesion y calculo del perfil, usa preferentemente la API versionada.
 
 ## 1. Usuarios y autenticacion
 
@@ -105,7 +218,7 @@ Content-Type: application/json
 Ejemplo:
 
 ```bash
-curl -X POST http://localhost:3000/api/usuarios ^
+curl -X POST http://localhost:3001/api/usuarios ^
   -H "Content-Type: application/json" ^
   -d "{\"nombre_completo\":\"Ana Perez\",\"email\":\"ana@example.com\",\"password\":\"una-clave-segura\",\"fecha_nacimiento\":\"1995-08-21\"}"
 ```
@@ -125,6 +238,8 @@ Content-Type: application/json
 ```
 
 La respuesta incluye `token` y los datos publicos del usuario. Guarda ese token para las siguientes solicitudes.
+
+Las rutas de consulta y modificacion de usuarios solo permiten acceder a la cuenta asociada al token. Los hash de contrasena nunca se incluyen en las respuestas.
 
 ### Listar usuarios
 
@@ -184,6 +299,8 @@ Content-Type: application/json
   "numero_alma": 7
 }
 ```
+
+Los campos `numero_vida`, `numero_expresion` y `numero_alma` deben ser enteros positivos de hasta 10 dígitos.
 
 ### Listar perfiles
 
@@ -295,7 +412,6 @@ Content-Type: application/json
 
 ```json
 {
-  "usuario_1": "ID_USUARIO_1",
   "usuario_2": "ID_USUARIO_2",
   "puntaje": 85,
   "interpretacion_ia": "Alta compatibilidad emocional y espiritual."
@@ -303,6 +419,7 @@ Content-Type: application/json
 ```
 
 Ambos valores `usuario_1` y `usuario_2` deben ser ObjectId validos de MongoDB.
+En creacion, `usuario_1` se toma del token de autenticacion; solo se envia `usuario_2`. Estas rutas legadas solo almacenan datos proporcionados, sin calcular compatibilidades ni generar interpretaciones mediante IA.
 
 ### Listar compatibilidades
 
@@ -342,9 +459,11 @@ Authorization: Bearer TU_TOKEN
 
 ## 5. Auditoria
 
+Los registros se crean automaticamente al finalizar solicitudes autenticadas. Solo estan disponibles las rutas `GET`; no se permite crear, actualizar ni eliminar registros manualmente, y cada usuario consulta unicamente sus propios registros. Los ejemplos POST, PUT y DELETE heredados de esta seccion se conservan como referencia historica, pero ya no estan habilitados.
+
 Todos los endpoints de esta seccion requieren autenticacion.
 
-### Crear registro de auditoria
+### Ejemplo legado: crear registro manual (deshabilitado)
 
 ```http
 POST /api/auditoria
@@ -375,7 +494,7 @@ GET /api/auditoria/ID_AUDITORIA
 Authorization: Bearer TU_TOKEN
 ```
 
-### Actualizar un registro
+### Ejemplo legado: actualizar un registro (deshabilitado)
 
 ```http
 PUT /api/auditoria/ID_AUDITORIA
@@ -391,7 +510,7 @@ Content-Type: application/json
 }
 ```
 
-### Eliminar un registro
+### Ejemplo legado: eliminar un registro (deshabilitado)
 
 ```http
 DELETE /api/auditoria/ID_AUDITORIA
@@ -424,9 +543,9 @@ Los parametros `:id` deben ser ObjectId validos de MongoDB. Las operaciones de l
 ## Prueba rapida con JavaScript
 
 ```js
-const baseUrl = "http://localhost:3000";
+const baseUrl = "http://localhost:3001";
 
-const loginResponse = await fetch(`${baseUrl}/api/usuarios/login`, {
+const loginResponse = await fetch(`${baseUrl}/api/v1/auth/login`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
@@ -437,7 +556,7 @@ const loginResponse = await fetch(`${baseUrl}/api/usuarios/login`, {
 
 const { token } = await loginResponse.json();
 
-const profilesResponse = await fetch(`${baseUrl}/api/perfiles`, {
+const profilesResponse = await fetch(`${baseUrl}/api/v1/numerology/profile`, {
   headers: { Authorization: `Bearer ${token}` }
 });
 
@@ -446,7 +565,7 @@ console.log(await profilesResponse.json());
 
 ## Importante antes de publicar
 
-- Configura `MONGO_URI`, `JWT_SECRET` y `PORT` en el servicio de despliegue.
+- Configura `MONGODB_URI`, `MONGODB_DB_NAME`, `JWT_SECRET` y `PORT` en el servicio de despliegue.
 - No subas `.env` a GitHub.
 - Usa HTTPS en la URL publica.
 - Cambia `JWT_SECRET` por una clave larga y privada.

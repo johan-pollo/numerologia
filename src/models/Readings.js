@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const readingsSchema = new mongoose.Schema({
+    usuario: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        index: true
+    },
     prompt: {
         type: String,
         required: true,

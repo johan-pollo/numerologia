@@ -4,17 +4,21 @@ const userSchema = new mongoose.Schema({
     nombre_completo: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
+    maxlength: 120
 },
     email: {
     type: String,
     required: true,
     unique: true,
-    trim: true
+    trim: true,
+    lowercase: true,
+    maxlength: 254
 },
     password_hash: {
     type: String,
-    required: true
+    required: true,
+    select: false
 },
     fecha_nacimiento: {
     type: Date,

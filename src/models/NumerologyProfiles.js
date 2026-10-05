@@ -8,15 +8,24 @@ const numerologyProfileSchema = new mongoose.Schema({
     },
     numero_vida: {
         type: Number,
-        required: true
+        required: true,
+        min: 1,
+        max: 9999999999,
+        validate: Number.isInteger
     },
     numero_expresion: {
         type: Number,
-        required: true
+        required: true,
+        min: 1,
+        max: 9999999999,
+        validate: Number.isInteger
     },
     numero_alma: {
         type: Number,
-        required: true
+        required: true,
+        min: 1,
+        max: 9999999999,
+        validate: Number.isInteger
     }
 });
 

@@ -2,15 +2,22 @@ import Reading from "../models/Readings.js";
 
 export const crearLectura = async (req, res) => {
     try {
-        const lectura = new Reading(req.body);
+        const { prompt, respuesta, tipo_lectura } = req.body;
+        const lectura = new Reading({
+            usuario: req.usuarioId,
+            prompt,
+            respuesta,
+            tipo_lectura
+        });
         await lectura.save();
 
-        res.status(201).json({
+        return res.status(201).json({
             mensaje: "Lectura creada correctamente",
             lectura
         });
     } catch (error) {
-        res.status(500).json({
+        console.error("Error al crear la lectura:", error.message);
+        return res.status(error.name === "ValidationError" ? 400 : 500).json({
             mensaje: "Error al crear la lectura"
         });
     }
@@ -18,11 +25,14 @@ export const crearLectura = async (req, res) => {
 
 export const obtenerLecturas = async (req, res) => {
     try {
-        const lecturas = await Reading.find();
+        const lecturas = await Reading.find({ usuario: req.usuarioId })
+            .sort({ fecha: -1 })
+            .limit(100);
 
-        res.status(200).json(lecturas);
+        return res.status(200).json(lecturas);
     } catch (error) {
-        res.status(500).json({
+        console.error("Error al obtener las lecturas:", error.message);
+        return res.status(500).json({
             mensaje: "Error al obtener las lecturas"
         });
     }
@@ -30,7 +40,10 @@ export const obtenerLecturas = async (req, res) => {
 
 export const obtenerLectura = async (req, res) => {
     try {
-        const lectura = await Reading.findById(req.params.id);
+        const lectura = await Reading.findOne({
+            _id: req.params.id,
+            usuario: req.usuarioId
+        });
 
         if (!lectura) {
             return res.status(404).json({
@@ -38,9 +51,10 @@ export const obtenerLectura = async (req, res) => {
             });
         }
 
-        res.status(200).json(lectura);
+        return res.status(200).json(lectura);
     } catch (error) {
-        res.status(500).json({
+        console.error("Error al obtener la lectura:", error.message);
+        return res.status(500).json({
             mensaje: "Error al obtener la lectura"
         });
     }
@@ -48,10 +62,11 @@ export const obtenerLectura = async (req, res) => {
 
 export const actualizarLectura = async (req, res) => {
     try {
-        const lectura = await Reading.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
+        const { prompt, respuesta, tipo_lectura } = req.body;
+        const lectura = await Reading.findOneAndUpdate(
+            { _id: req.params.id, usuario: req.usuarioId },
+            { prompt, respuesta, tipo_lectura },
+            { new: true, runValidators: true }
         );
 
         if (!lectura) {
@@ -60,12 +75,13 @@ export const actualizarLectura = async (req, res) => {
             });
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             mensaje: "Lectura actualizada correctamente",
             lectura
         });
     } catch (error) {
-        res.status(500).json({
+        console.error("Error al actualizar la lectura:", error.message);
+        return res.status(error.name === "ValidationError" ? 400 : 500).json({
             mensaje: "Error al actualizar la lectura"
         });
     }
@@ -73,7 +89,10 @@ export const actualizarLectura = async (req, res) => {
 
 export const eliminarLectura = async (req, res) => {
     try {
-        const lectura = await Reading.findByIdAndDelete(req.params.id);
+        const lectura = await Reading.findOneAndDelete({
+            _id: req.params.id,
+            usuario: req.usuarioId
+        });
 
         if (!lectura) {
             return res.status(404).json({
@@ -81,11 +100,12 @@ export const eliminarLectura = async (req, res) => {
             });
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             mensaje: "Lectura eliminada correctamente"
         });
     } catch (error) {
-        res.status(500).json({
+        console.error("Error al eliminar la lectura:", error.message);
+        return res.status(500).json({
             mensaje: "Error al eliminar la lectura"
         });
     }

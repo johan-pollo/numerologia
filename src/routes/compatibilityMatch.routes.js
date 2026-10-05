@@ -8,7 +8,11 @@ import {
     eliminarCompatibilidad
 } from "../controllers/compatibilityMatch.controller.js";
 
-import { idValidator } from "../validators/uservalidator.js";
+import {
+    crearCompatibilidadValidator,
+    actualizarCompatibilidadValidator,
+    idValidator
+} from "../validators/uservalidator.js";
 import { validarCampos } from "../middlewares/validarcampos.js";
 import { autenticar } from "../middlewares/autenticacion.js";
 
@@ -18,6 +22,8 @@ router.use(autenticar);
 
 router.post(
     "/",
+    crearCompatibilidadValidator,
+    validarCampos,
     crearCompatibilidad
 );
 
@@ -36,6 +42,7 @@ router.get(
 router.put(
     "/:id",
     idValidator,
+    actualizarCompatibilidadValidator,
     validarCampos,
     actualizarCompatibilidad
 );

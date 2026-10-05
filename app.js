@@ -5,10 +5,14 @@ import numerologyProfileRoutes from "./src/routes/numerologyProfile.routes.js";
 import readingRoutes from "./src/routes/reading.routes.js";
 import compatibilityMatchRoutes from "./src/routes/compatibilityMatch.routes.js";
 import auditLogRoutes from "./src/routes/auditLog.routes.js";
+import authRoutes from "./src/routes/auth.routes.js";
+import numerologyRoutes from "./src/routes/numerology.routes.js";
+import { registrarAuditoria } from "./src/middlewares/auditoria.js";
+import readingHistoryRoutes from "./src/routes/readingHistory.routes.js";
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: "16kb" }));
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
@@ -23,6 +27,10 @@ app.get("/health", (req, res) => {
   res.status(200).json({ estado: "ok", servicio: "api-numerologia" });
 });
 
+app.use(registrarAuditoria);
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/numerology", numerologyRoutes);
+app.use("/api/v1/readings", readingHistoryRoutes);
 app.use("/api/usuarios", usuarioRoutes);
 app.use("/api/perfiles", numerologyProfileRoutes);
 app.use("/api/lecturas", readingRoutes);

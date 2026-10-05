@@ -13,12 +13,15 @@ const compatibilityMatchesSchema = new mongoose.Schema({
     },
     puntaje: {
         type: Number,
-        required: true
+        required: true,
+        min: 0,
+        max: 100
     },
     interpretacion_ia: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        maxlength: 5000
     }
 });
 

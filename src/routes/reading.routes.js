@@ -38,6 +38,7 @@ router.get(
 router.put(
     "/:id",
     idValidator,
+    crearLecturaValidator,
     validarCampos,
     actualizarLectura
 );

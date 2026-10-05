@@ -1,11 +1,8 @@
 import express from "express";
 
 import {
-    crearAuditLog,
     obtenerAuditLogs,
-    obtenerAuditLog,
-    actualizarAuditLog,
-    eliminarAuditLog
+    obtenerAuditLog
 } from "../controllers/auditLog.controller.js";
 
 import { idValidator } from "../validators/uservalidator.js";
@@ -15,11 +12,6 @@ import { autenticar } from "../middlewares/autenticacion.js";
 const router = express.Router();
 
 router.use(autenticar);
-
-router.post(
-    "/",
-    crearAuditLog
-);
 
 router.get(
     "/",
@@ -31,20 +23,6 @@ router.get(
     idValidator,
     validarCampos,
     obtenerAuditLog
-);
-
-router.put(
-    "/:id",
-    idValidator,
-    validarCampos,
-    actualizarAuditLog
-);
-
-router.delete(
-    "/:id",
-    idValidator,
-    validarCampos,
-    eliminarAuditLog
 );
 
 export default router;
