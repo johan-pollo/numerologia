@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Numerología | Dashboard</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      :root {
+        color-scheme: light;
+        --ink: #173b38;
+        --ink-soft: #315653;
+        --muted: #697d78;
+        --paper: #f7f4ec;
+        --panel: #fffefa;
+        --line: #e7e3d8;
+        --teal: #176b62;
+        --teal-dark: #104b46;
+        --teal-pale: #e8f1eb;
+        --coral: #d97760;
+        --coral-pale: #fff0e8;
+        --shadow: 0 20px 55px rgba(28, 57, 51, 0.09);
+        --shadow-small: 0 8px 24px rgba(28, 57, 51, 0.06);
+      }
+
+      html {
+        min-width: 320px;
+        background: var(--paper);
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 94% 3%, rgba(217, 119, 96, 0.1), transparent 29rem),
+          radial-gradient(ellipse at 0% 42%, rgba(23, 107, 98, 0.07), transparent 31rem),
+          var(--paper);
+        font-family: Arial, Helvetica, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      .container {
+        width: min(100% - 48px, 1120px);
+        margin: 0 auto;
+        padding: 30px 0 72px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 48px;
+        height: 48px;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 16px;
+        color: #fffaf1;
+        background: linear-gradient(145deg, #237f73, #104b46);
+        box-shadow: 0 8px 18px rgba(16, 75, 70, 0.18);
+        font: 1.45rem/1 Georgia, "Times New Roman", serif;
+      }
+
+      .brand h1 {
+        margin: 0 0 4px;
+        color: var(--ink);
+        font: 600 1.35rem/1.15 Georgia, "Times New Roman", serif;
+        letter-spacing: -0.025em;
+      }
+
+      .brand p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.77rem;
+        letter-spacing: 0.035em;
+      }
+
+      .button {
+        min-height: 46px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        border: 1px solid transparent;
+        border-radius: 12px;
+        padding: 0 19px;
+        color: #fffefa;
+        background: var(--teal);
+        box-shadow: 0 7px 16px rgba(23, 107, 98, 0.16);
+        cursor: pointer;
+        font: 700 0.9rem/1 Arial, Helvetica, sans-serif;
+        transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+      }
+
+      .button:hover:not(:disabled) {
+        transform: translateY(-1px);
+        background: var(--teal-dark);
+        box-shadow: 0 10px 20px rgba(23, 107, 98, 0.2);
+      }
+
+      .button:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      .button:disabled {
+        cursor: wait;
+        opacity: 0.72;
+        box-shadow: none;
+      }
+
+      .button.secondary {
+        border-color: #d6e4dc;
+        color: var(--teal-dark);
+        background: #edf4ee;
+        box-shadow: none;
+      }
+
+      .button.secondary:hover:not(:disabled) {
+        background: #dfece4;
+        box-shadow: none;
+      }
+
+      .hero {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1.45fr) minmax(245px, 0.7fr);
+        gap: 36px;
+        align-items: center;
+        overflow: hidden;
+        margin-bottom: 24px;
+        padding: clamp(28px, 5vw, 56px);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 28px;
+        color: #fffaf1;
+        background:
+          radial-gradient(circle at 90% 12%, rgba(247, 202, 170, 0.2), transparent 17rem),
+          linear-gradient(118deg, #164e49 0%, #176b62 64%, #318477 100%);
+        box-shadow: 0 24px 50px rgba(18, 77, 70, 0.17);
+      }
+
+      .hero::after {
+        position: absolute;
+        right: -50px;
+        bottom: -160px;
+        width: 330px;
+        height: 330px;
+        border: 1px solid rgba(255, 250, 241, 0.12);
+        border-radius: 50%;
+        box-shadow: 0 0 0 32px rgba(255, 250, 241, 0.035), 0 0 0 66px rgba(255, 250, 241, 0.025);
+        content: "";
+        pointer-events: none;
+      }
+
+      .hero h2 {
+        max-width: 640px;
+        margin: 0 0 16px;
+        color: #fffaf1;
+        font: 400 clamp(2.4rem, 6vw, 4.4rem)/0.99 Georgia, "Times New Roman", serif;
+        letter-spacing: -0.045em;
+      }
+
+      .eyebrow {
+        margin: 0 0 14px !important;
+        color: #f2b69d !important;
+        font-size: 0.7rem !important;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        line-height: 1.4 !important;
+        text-transform: uppercase;
+      }
+
+      .hero p {
+        max-width: 590px;
+        margin: 0;
+        color: rgba(255, 250, 241, 0.82);
+        font-size: 1rem;
+        line-height: 1.7;
+      }
+
+      .status {
+        position: relative;
+        z-index: 1;
+        min-height: 76px;
+        display: flex;
+        align-items: center;
+        padding: 17px 19px;
+        border: 1px solid rgba(255, 250, 241, 0.18);
+        border-left: 3px solid #edaa8c;
+        border-radius: 4px 14px 14px 4px;
+        color: #fffaf1;
+        background: rgba(255, 255, 255, 0.09);
+        font-size: 0.88rem;
+        line-height: 1.55;
+        backdrop-filter: blur(8px);
+      }
+
+      .status.success {
+        border-left-color: #a9d6ad;
+      }
+
+      .status.error {
+        border-left-color: #ffb19c;
+        background: rgba(112, 39, 30, 0.28);
+      }
+
+      .status.loading {
+        border-left-color: #f0ce85;
+      }
+
+      .login-panel,
+      .panel {
+        border: 1px solid rgba(221, 221, 207, 0.9);
+        border-radius: 22px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+
+      .login-panel {
+        display: none;
+        margin-bottom: 24px;
+        padding: clamp(22px, 4vw, 38px);
+        border-top: 3px solid var(--coral);
+        animation: rise-in 240ms ease both;
+      }
+
+      .login-panel.visible {
+        display: block;
+      }
+
+      .auth-tabs {
+        display: flex;
+        gap: 30px;
+        margin: 0 0 28px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .auth-tab {
+        position: relative;
+        min-height: 42px;
+        padding: 0 2px 13px;
+        border: 0;
+        color: var(--muted);
+        background: transparent;
+        cursor: pointer;
+        font: 700 0.9rem/1 Arial, Helvetica, sans-serif;
+        transition: color 150ms ease;
+      }
+
+      .auth-tab::after {
+        position: absolute;
+        right: 0;
+        bottom: -1px;
+        left: 0;
+        height: 3px;
+        border-radius: 3px 3px 0 0;
+        background: transparent;
+        content: "";
+      }
+
+      .auth-tab:hover,
+      .auth-tab[aria-selected="true"] {
+        color: var(--teal-dark);
+      }
+
+      .auth-tab[aria-selected="true"]::after {
+        background: var(--coral);
+      }
+
+      .login-panel h2,
+      .panel h2 {
+        margin: 0 0 9px;
+        color: var(--ink);
+        font: 400 clamp(1.5rem, 3vw, 1.9rem)/1.2 Georgia, "Times New Roman", serif;
+        letter-spacing: -0.025em;
+      }
+
+      .login-panel form:not(.register-form) {
+        display: grid;
+        max-width: 560px;
+        grid-template-columns: 1fr 1fr;
+        gap: 17px;
+        align-items: end;
+        margin-top: 24px;
+      }
+
+      .login-panel form:not(.register-form) .button {
+        grid-column: 1 / -1;
+        justify-self: start;
+        min-width: 150px;
+      }
+
+      .register-form {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 17px;
+        align-items: end;
+        margin-top: 24px;
+      }
+
+      .register-form .auth-submit {
+        grid-column: 1 / -1;
+        justify-self: start;
+        min-width: 170px;
+      }
+
+      label {
+        display: grid;
+        min-width: 0;
+        gap: 8px;
+        color: var(--ink-soft);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.015em;
+      }
+
+      input {
+        width: 100%;
+        min-height: 48px;
+        border: 1px solid #d9dfd8;
+        border-radius: 11px;
+        padding: 0 14px;
+        color: var(--ink);
+        background: #fff;
+        font: 400 0.94rem/1.4 Arial, Helvetica, sans-serif;
+        transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+      }
+
+      input::placeholder {
+        color: #9aa7a1;
+      }
+
+      input:hover {
+        border-color: #b7c8bf;
+      }
+
+      input:focus {
+        border-color: var(--teal);
+        outline: 0;
+        background: #fffefa;
+        box-shadow: 0 0 0 4px rgba(23, 107, 98, 0.13);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 24px;
+      }
+
+      .card {
+        position: relative;
+        min-height: 196px;
+        overflow: hidden;
+        padding: 25px 26px;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: var(--panel);
+        box-shadow: var(--shadow-small);
+        transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+      }
+
+      .card::after {
+        position: absolute;
+        top: -36px;
+        right: -34px;
+        width: 106px;
+        height: 106px;
+        border: 1px solid rgba(23, 107, 98, 0.1);
+        border-radius: 50%;
+        box-shadow: 0 0 0 15px rgba(23, 107, 98, 0.035);
+        content: "";
+        pointer-events: none;
+      }
+
+      .card:hover {
+        transform: translateY(-3px);
+        border-color: #cbd9cf;
+        box-shadow: 0 14px 32px rgba(28, 57, 51, 0.1);
+      }
+
+      .card h3 {
+        margin: 0 0 17px;
+        color: var(--muted);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .numero {
+        display: inline-grid;
+        min-width: 62px;
+        min-height: 62px;
+        place-items: center;
+        margin: 0 0 14px;
+        border: 1px solid #d5e5db;
+        border-radius: 19px;
+        color: var(--teal-dark);
+        background: linear-gradient(145deg, #f2f7ef, #e7f1e9);
+        font: 500 2.15rem/1 Georgia, "Times New Roman", serif;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .card:nth-child(2) .numero {
+        border-color: #f2ddd2;
+        color: #a85746;
+        background: linear-gradient(145deg, #fff6ee, #fae9dd);
+      }
+
+      .card:nth-child(3) .numero {
+        border-color: #dce2d0;
+        color: #64764d;
+        background: linear-gradient(145deg, #f5f4e9, #edf0df);
+      }
+
+      .mini {
+        max-width: 260px;
+        color: var(--muted);
+        font-size: 0.85rem;
+        line-height: 1.55;
+      }
+
+      .panel {
+        padding: clamp(24px, 4vw, 36px);
+      }
+
+      .panel > p {
+        max-width: 650px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.93rem;
+        line-height: 1.65;
+      }
+
+      .profile-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin-top: 23px;
+      }
+
+      .feedback {
+        min-height: 1.2em;
+        margin: 14px 0 0;
+        color: var(--teal-dark);
+        font-size: 0.88rem;
+        line-height: 1.55;
+      }
+
+      .feedback:empty {
+        min-height: 0;
+        margin-top: 0;
+      }
+
+      .feedback.error {
+        color: #a33c31;
+      }
+
+      .feedback:not(:empty) {
+        padding: 11px 13px;
+        border-radius: 10px;
+        background: var(--teal-pale);
+      }
+
+      .feedback.error:not(:empty) {
+        background: var(--coral-pale);
+      }
+
+      @keyframes rise-in {
+        from {
+          transform: translateY(7px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      :focus-visible {
+        outline: 3px solid #e7997d;
+        outline-offset: 3px;
+      }
+
+      @media (max-width: 760px) {
+        .container {
+          width: min(100% - 36px, 620px);
+          padding-top: 22px;
+        }
+
+        .hero {
+          grid-template-columns: 1fr;
+          gap: 23px;
+          padding: 34px;
+          border-radius: 23px;
+        }
+
+        .hero h2 {
+          max-width: 540px;
+        }
+
+        .status {
+          min-height: 60px;
+        }
+
+        .grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 14px;
+        }
+
+        .card {
+          min-height: 180px;
+          padding: 21px;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .container {
+          width: min(100% - 28px, 420px);
+          padding: 17px 0 42px;
+        }
+
+        .topbar {
+          gap: 12px;
+          margin-bottom: 22px;
+        }
+
+        .brand {
+          gap: 10px;
+        }
+
+        .brand-mark {
+          width: 42px;
+          height: 42px;
+          border-radius: 14px;
+        }
+
+        .brand h1 {
+          font-size: 1.2rem;
+        }
+
+        .brand p {
+          font-size: 0.7rem;
+        }
+
+        .button {
+          min-height: 44px;
+          padding: 0 15px;
+          font-size: 0.84rem;
+        }
+
+        #logoutButton {
+          padding: 0 12px;
+          font-size: 0.78rem;
+        }
+
+        .hero {
+          gap: 20px;
+          margin-bottom: 17px;
+          padding: 28px 23px;
+          border-radius: 20px;
+        }
+
+        .hero h2 {
+          margin-bottom: 12px;
+          font-size: clamp(2.2rem, 12vw, 3rem);
+        }
+
+        .hero p {
+          font-size: 0.9rem;
+        }
+
+        .status {
+          min-height: 56px;
+          padding: 13px 15px;
+          font-size: 0.81rem;
+        }
+
+        .login-panel,
+        .panel {
+          border-radius: 18px;
+        }
+
+        .login-panel {
+          margin-bottom: 17px;
+          padding: 22px 19px;
+        }
+
+        .auth-tabs {
+          gap: 25px;
+          margin-bottom: 23px;
+        }
+
+        .login-panel form:not(.register-form),
+        .register-form {
+          grid-template-columns: 1fr;
+          gap: 14px;
+          margin-top: 20px;
+        }
+
+        .login-panel form:not(.register-form) .button,
+        .register-form .auth-submit {
+          grid-column: auto;
+          justify-self: stretch;
+        }
+
+        .grid {
+          gap: 11px;
+          margin-bottom: 17px;
+        }
+
+        .card {
+          min-height: 164px;
+          padding: 18px 15px;
+          border-radius: 16px;
+        }
+
+        .card h3 {
+          min-height: 2.2em;
+          margin-bottom: 12px;
+          font-size: 0.64rem;
+          letter-spacing: 0.09em;
+        }
+
+        .numero {
+          min-width: 52px;
+          min-height: 52px;
+          margin-bottom: 10px;
+          border-radius: 16px;
+          font-size: 1.8rem;
+        }
+
+        .mini {
+          font-size: 0.75rem;
+          line-height: 1.45;
+        }
+
+        .panel {
+          padding: 24px 20px;
+        }
+
+        .panel > p {
+          font-size: 0.86rem;
+        }
+
+        .profile-form .button {
+          width: 100%;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">N</div>
+          <div>
+            <h1>Numerología</h1>
+            <p>Panel de análisis personal</p>
+          </div>
+        </div>
+        <button class="button secondary" id="logoutButton" type="button" hidden>Cerrar sesión</button>
+      </header>
+
+      <main>
+        <section class="hero" aria-labelledby="heroTitle">
+          <div>
+            <p class="eyebrow">Un espacio para conocerte</p>
+            <h2 id="heroTitle">Tu perfil, visto con claridad.</h2>
+            <p>Consulta tus números principales y administra los perfiles numerológicos desde un solo lugar.</p>
+          </div>
+          <div class="status" id="statusMessage" role="status" aria-live="polite" aria-atomic="true">
+            Inicia sesión para cargar tus datos.
+          </div>
+        </section>
+
+        <section class="login-panel visible" id="loginPanel" aria-label="Acceso a la cuenta">
+          <div class="auth-tabs" role="tablist" aria-label="Acceso y registro">
+            <button class="auth-tab" id="loginTab" type="button" role="tab" aria-selected="true" aria-controls="loginView">Ingresar</button>
+            <button class="auth-tab" id="registerTab" type="button" role="tab" aria-selected="false" aria-controls="registerView">Crear cuenta</button>
+          </div>
+          <div id="loginView" role="tabpanel" aria-labelledby="loginTab">
+            <h2>Qué bueno verte</h2>
+            <form id="loginForm">
+              <label>Email<input id="email" name="email" type="email" autocomplete="email" required placeholder="tu@email.com" /></label>
+              <label>Contraseña<input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Tu contraseña" /></label>
+              <button class="button" id="loginSubmit" type="submit">Ingresar</button>
+            </form>
+            <p class="feedback" id="loginFeedback" aria-live="polite" aria-atomic="true"></p>
+          </div>
+          <div id="registerView" role="tabpanel" aria-labelledby="registerTab" hidden>
+            <h2>Comienza tu recorrido</h2>
+            <form class="register-form" id="registerForm">
+              <label>Nombre completo<input name="nombre_completo" type="text" autocomplete="name" maxlength="120" required placeholder="Tu nombre" /></label>
+              <label>Email<input name="email" type="email" autocomplete="email" required placeholder="tu@email.com" /></label>
+              <label>Fecha de nacimiento<input name="fecha_nacimiento" type="date" autocomplete="bday" required /></label>
+              <label>Contraseña<input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required placeholder="Mínimo 8 caracteres" /></label>
+              <label>Confirmar contraseña<input name="confirmar_password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required placeholder="Repite tu contraseña" /></label>
+              <button class="button auth-submit" id="registerSubmit" type="submit">Crear cuenta</button>
+            </form>
+            <p class="feedback" id="registerFeedback" aria-live="polite" aria-atomic="true"></p>
+          </div>
+        </section>
+
+        <section class="grid" aria-label="Números principales del perfil">
+          <article class="card">
+            <h3>Número de vida</h3>
+            <div class="numero" id="lifeNumber" aria-live="polite">-</div>
+            <div class="mini">Tu dirección y propósito personal.</div>
+          </article>
+
+          <article class="card">
+            <h3>Expresión</h3>
+            <div class="numero" id="expressionNumber" aria-live="polite">-</div>
+            <div class="mini">Tu manera de comunicar y crear.</div>
+          </article>
+
+          <article class="card">
+            <h3>Número del alma</h3>
+            <div class="numero" id="soulNumber" aria-live="polite">-</div>
+            <div class="mini">Tus motivaciones y mundo interior.</div>
+          </article>
+        </section>
+
+        <section class="panel" aria-labelledby="profileTitle">
+          <h2 id="profileTitle">Calcular mi perfil</h2>
+          <p>Calcula o actualiza tus números con el nombre y la fecha de nacimiento de tu cuenta.</p>
+          <form class="profile-form" id="profileForm">
+            <button class="button" type="submit">Calcular mi perfil</button>
+          </form>
+          <p class="feedback" id="profileFeedback" aria-live="polite" aria-atomic="true"></p>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const tokenKey = "numerologia_token";
+      const userKey = "numerologia_usuario";
+      const loginPanel = document.querySelector("#loginPanel");
+      const loginTab = document.querySelector("#loginTab");
+      const registerTab = document.querySelector("#registerTab");
+      const loginView = document.querySelector("#loginView");
+      const registerView = document.querySelector("#registerView");
+      const logoutButton = document.querySelector("#logoutButton");
+      const statusMessage = document.querySelector("#statusMessage");
+      const loginFeedback = document.querySelector("#loginFeedback");
+      const registerFeedback = document.querySelector("#registerFeedback");
+      const profileFeedback = document.querySelector("#profileFeedback");
+      const loginSubmit = document.querySelector("#loginSubmit");
+
+      const getToken = () => localStorage.getItem(tokenKey);
+      const getUser = () => JSON.parse(localStorage.getItem(userKey) || "null");
+
+      function setFeedback(element, message, isError = false) {
+        element.textContent = message;
+        element.classList.toggle("error", isError);
+      }
+
+      async function request(path, options = {}) {
+        const response = await fetch(path, {
+          ...options,
+          headers: {
+            "Content-Type": "application/json",
+            ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
+            ...(options.headers || {})
+          }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const errores = data.errores?.map((error) => error.mensaje).filter(Boolean).join(". ");
+          const error = new Error(errores || data.mensaje || "No se pudo completar la solicitud.");
+          error.status = response.status;
+          throw error;
+        }
+        return data;
+      }
+
+      function mostrarVistaAcceso(vista) {
+        const mostrarLogin = vista === "login";
+        loginView.hidden = !mostrarLogin;
+        registerView.hidden = mostrarLogin;
+        loginTab.setAttribute("aria-selected", String(mostrarLogin));
+        registerTab.setAttribute("aria-selected", String(!mostrarLogin));
+      }
+
+      function renderProfile(profile) {
+        document.querySelector("#lifeNumber").textContent = profile?.numero_vida ?? "-";
+        document.querySelector("#expressionNumber").textContent = profile?.numero_expresion ?? "-";
+        document.querySelector("#soulNumber").textContent = profile?.numero_alma ?? "-";
+      }
+
+      async function loadDashboard() {
+        if (!getToken()) return;
+        statusMessage.classList.remove("error", "success");
+        statusMessage.classList.add("loading");
+        statusMessage.textContent = "Consultando tu perfil...";
+        statusMessage.setAttribute("aria-busy", "true");
+        try {
+          let profile = null;
+          try {
+            profile = await request("/api/v1/numerology/profile");
+          } catch (error) {
+            if (error.status !== 404) throw error;
+          }
+          renderProfile(profile);
+          statusMessage.textContent = `Sesión activa${getUser()?.nombre_completo ? ` · ${getUser().nombre_completo}` : ""}.`;
+          statusMessage.classList.remove("loading");
+          statusMessage.classList.add("success");
+        } catch (error) {
+          statusMessage.textContent = error.message;
+          statusMessage.classList.remove("loading", "success");
+          statusMessage.classList.add("error");
+        } finally {
+          statusMessage.removeAttribute("aria-busy");
+        }
+      }
+
+      document.querySelector("#loginForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        loginSubmit.disabled = true;
+        loginSubmit.setAttribute("aria-busy", "true");
+        loginSubmit.textContent = "Ingresando...";
+        setFeedback(loginFeedback, "Validando acceso...");
+        const formData = new FormData(event.currentTarget);
+        try {
+          const data = await request("/api/v1/auth/login", {
+            method: "POST",
+            body: JSON.stringify({ email: formData.get("email"), password: formData.get("password") })
+          });
+          localStorage.setItem(tokenKey, data.token);
+          localStorage.setItem(userKey, JSON.stringify(data.usuario));
+          loginPanel.classList.remove("visible");
+          logoutButton.hidden = false;
+          setFeedback(loginFeedback, "");
+          await loadDashboard();
+        } catch (error) {
+          setFeedback(loginFeedback, error.message, true);
+        } finally {
+          loginSubmit.disabled = false;
+          loginSubmit.removeAttribute("aria-busy");
+          loginSubmit.textContent = "Ingresar";
+        }
+      });
+
+      loginTab.addEventListener("click", () => mostrarVistaAcceso("login"));
+      registerTab.addEventListener("click", () => mostrarVistaAcceso("register"));
+
+      document.querySelector("#registerForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const formData = new FormData(form);
+        const password = formData.get("password");
+
+        if (password !== formData.get("confirmar_password")) {
+          setFeedback(registerFeedback, "Las contraseñas no coinciden.", true);
+          return;
+        }
+
+        const submitButton = document.querySelector("#registerSubmit");
+        submitButton.disabled = true;
+        submitButton.setAttribute("aria-busy", "true");
+        submitButton.textContent = "Creando cuenta...";
+        setFeedback(registerFeedback, "Creando cuenta...");
+
+        try {
+          await request("/api/v1/auth/register", {
+            method: "POST",
+            body: JSON.stringify({
+              nombre_completo: String(formData.get("nombre_completo")).trim(),
+              email: String(formData.get("email")).trim(),
+              password,
+              fecha_nacimiento: formData.get("fecha_nacimiento")
+            })
+          });
+
+          form.reset();
+          document.querySelector("#email").value = String(formData.get("email")).trim();
+          mostrarVistaAcceso("login");
+          setFeedback(registerFeedback, "");
+          setFeedback(loginFeedback, "Cuenta creada. Inicia sesión con tu email y contraseña.");
+        } catch (error) {
+          setFeedback(registerFeedback, error.message, true);
+        } finally {
+          submitButton.disabled = false;
+          submitButton.removeAttribute("aria-busy");
+          submitButton.textContent = "Crear cuenta";
+        }
+      });
+
+      document.querySelector("#profileForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!getToken()) return setFeedback(profileFeedback, "Primero inicia sesión.", true);
+        const submitButton = event.currentTarget.querySelector("button[type='submit']");
+        submitButton.disabled = true;
+        submitButton.setAttribute("aria-busy", "true");
+        submitButton.textContent = "Calculando...";
+        setFeedback(profileFeedback, "Calculando perfil...");
+        try {
+          await request("/api/v1/numerology/calculate", {
+            method: "POST",
+            body: JSON.stringify({})
+          });
+          setFeedback(profileFeedback, "Perfil calculado correctamente.");
+          await loadDashboard();
+        } catch (error) {
+          setFeedback(profileFeedback, error.message, true);
+        } finally {
+          submitButton.disabled = false;
+          submitButton.removeAttribute("aria-busy");
+          submitButton.textContent = "Calcular mi perfil";
+        }
+      });
+
+      logoutButton.addEventListener("click", () => {
+        localStorage.removeItem(tokenKey);
+        localStorage.removeItem(userKey);
+        window.location.reload();
+      });
+
+      if (getToken()) {
+        loginPanel.classList.remove("visible");
+        logoutButton.hidden = false;
+        loadDashboard();
+      }
+    </script>
+  </body>
+</html>

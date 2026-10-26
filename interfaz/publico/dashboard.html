@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Numerología | Dashboard</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      :root {
+        --ink: #173b38;
+        --muted: #697d78;
+        --paper: #f7f4ec;
+        --panel: #fffefa;
+        --line: #e7e3d8;
+        --teal: #176b62;
+        --teal-dark: #104b46;
+        --coral: #d97760;
+        --shadow: 0 18px 48px rgba(28, 57, 51, 0.09);
+      }
+
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 94% 3%, rgba(217, 119, 96, 0.1), transparent 29rem),
+          radial-gradient(ellipse at 0% 42%, rgba(23, 107, 98, 0.07), transparent 31rem),
+          var(--paper);
+        font-family: Arial, Helvetica, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .container {
+        width: min(100% - 48px, 1120px);
+        margin: 0 auto;
+        padding: 30px 0 64px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 30px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 48px;
+        height: 48px;
+        place-items: center;
+        border-radius: 16px;
+        color: #fffaf1;
+        background: linear-gradient(145deg, #237f73, var(--teal-dark));
+        box-shadow: 0 8px 18px rgba(16, 75, 70, 0.18);
+        font: 1.45rem/1 Georgia, "Times New Roman", serif;
+      }
+
+      .brand h1 {
+        margin: 0 0 4px;
+        font: 600 1.3rem/1.15 Georgia, "Times New Roman", serif;
+      }
+
+      .brand p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.77rem;
+      }
+
+      .back-link {
+        display: inline-flex;
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #d6e4dc;
+        border-radius: 12px;
+        padding: 0 16px;
+        color: var(--teal-dark);
+        background: #edf4ee;
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: background 150ms ease, transform 150ms ease;
+      }
+
+      .back-link:hover {
+        transform: translateY(-1px);
+        background: #dfece4;
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        padding: clamp(30px, 5vw, 54px);
+        border-radius: 28px;
+        color: #fffaf1;
+        background:
+          radial-gradient(circle at 90% 12%, rgba(247, 202, 170, 0.2), transparent 17rem),
+          linear-gradient(118deg, #164e49 0%, #176b62 64%, #318477 100%);
+        box-shadow: 0 24px 50px rgba(18, 77, 70, 0.17);
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: #f2b69d;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .hero h2 {
+        max-width: 720px;
+        margin: 0 0 13px;
+        font: 400 clamp(2.25rem, 6vw, 4rem)/1 Georgia, "Times New Roman", serif;
+        letter-spacing: -0.04em;
+      }
+
+      .hero > p:not(.eyebrow) {
+        max-width: 620px;
+        margin: 0;
+        color: rgba(255, 250, 241, 0.84);
+        font-size: 0.98rem;
+        line-height: 1.7;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 17px;
+        margin-top: 22px;
+      }
+
+      .card {
+        min-width: 0;
+        min-height: 190px;
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 19px;
+        background: var(--panel);
+        box-shadow: 0 8px 24px rgba(28, 57, 51, 0.06);
+        transition: transform 180ms ease, box-shadow 180ms ease;
+      }
+
+      .card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow);
+      }
+
+      .card h3 {
+        margin: 0 0 15px;
+        color: var(--muted);
+        font-size: 0.69rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .numero {
+        display: inline-grid;
+        min-width: 58px;
+        min-height: 58px;
+        place-items: center;
+        margin: 0 0 13px;
+        border: 1px solid #d5e5db;
+        border-radius: 18px;
+        color: var(--teal-dark);
+        background: linear-gradient(145deg, #f2f7ef, #e7f1e9);
+        font: 500 2rem/1 Georgia, "Times New Roman", serif;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .card:nth-child(2) .numero {
+        border-color: #f2ddd2;
+        color: #a85746;
+        background: linear-gradient(145deg, #fff6ee, #fae9dd);
+      }
+
+      .card:nth-child(3) .numero {
+        border-color: #dce2d0;
+        color: #64764d;
+        background: linear-gradient(145deg, #f5f4e9, #edf0df);
+      }
+
+      .card:nth-child(4) .numero {
+        border-color: #ead8cf;
+        color: #a85746;
+        background: linear-gradient(145deg, #fff6ee, #fae9dd);
+      }
+
+      .mini {
+        color: var(--muted);
+        font-size: 0.82rem;
+        line-height: 1.55;
+      }
+
+      .panel {
+        margin-top: 22px;
+        padding: clamp(23px, 4vw, 34px);
+        border: 1px solid var(--line);
+        border-radius: 21px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+
+      .panel h2 {
+        margin: 0 0 16px;
+        font: 400 1.65rem/1.2 Georgia, "Times New Roman", serif;
+      }
+
+      .lista {
+        display: grid;
+        gap: 0;
+      }
+
+      .item {
+        display: flex;
+        min-height: 58px;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        padding: 12px 4px;
+        border-bottom: 1px solid var(--line);
+        color: var(--ink);
+        font-size: 0.9rem;
+      }
+
+      .item:last-child {
+        border-bottom: 0;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid #d5e5db;
+        border-radius: 999px;
+        padding: 7px 12px;
+        color: var(--teal-dark);
+        background: #e8f1eb;
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .pill.warning {
+        border-color: #f2ddd2;
+        color: #934a3c;
+        background: #fff0e8;
+      }
+
+      .pill.info {
+        border-color: #dce2d0;
+        color: #566944;
+        background: #f1f2e7;
+      }
+
+      .note {
+        margin: 18px 0 0;
+        color: var(--muted);
+        font-size: 0.78rem;
+        line-height: 1.5;
+      }
+
+      :focus-visible {
+        outline: 3px solid #e7997d;
+        outline-offset: 3px;
+      }
+
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 520px) {
+        .container {
+          width: min(100% - 28px, 420px);
+          padding-top: 17px;
+        }
+
+        .topbar {
+          margin-bottom: 22px;
+        }
+
+        .brand-mark {
+          width: 42px;
+          height: 42px;
+          border-radius: 14px;
+        }
+
+        .brand h1 {
+          font-size: 1.18rem;
+        }
+
+        .brand p {
+          font-size: 0.68rem;
+        }
+
+        .back-link {
+          min-height: 40px;
+          padding: 0 12px;
+          font-size: 0.75rem;
+        }
+
+        .hero {
+          padding: 29px 23px;
+          border-radius: 21px;
+        }
+
+        .hero h2 {
+          font-size: clamp(2rem, 10vw, 2.8rem);
+        }
+
+        .grid {
+          gap: 11px;
+          margin-top: 16px;
+        }
+
+        .card {
+          min-height: 164px;
+          padding: 17px 14px;
+          border-radius: 16px;
+        }
+
+        .card h3 {
+          min-height: 2.2em;
+          margin-bottom: 11px;
+          font-size: 0.62rem;
+        }
+
+        .numero {
+          min-width: 51px;
+          min-height: 51px;
+          border-radius: 15px;
+          font-size: 1.8rem;
+        }
+
+        .mini {
+          font-size: 0.74rem;
+        }
+
+        .panel {
+          margin-top: 16px;
+          padding: 22px 18px;
+          border-radius: 18px;
+        }
+
+        .item {
+          font-size: 0.8rem;
+        }
+
+        .pill {
+          max-width: 52%;
+          padding: 6px 9px;
+          font-size: 0.68rem;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">N</div>
+          <div>
+            <h1>Numerología</h1>
+            <p>Panel de análisis personal</p>
+          </div>
+        </div>
+        <a class="back-link" href="/">Ir a mi panel</a>
+      </header>
+
+      <main>
+        <section class="hero" aria-labelledby="dashboardTitle">
+          <p class="eyebrow">Tu mapa interior</p>
+          <h2 id="dashboardTitle">Un espacio para mirar hacia dentro.</h2>
+          <p>Conoce los números principales de tu perfil y explora una lectura simbólica de cada uno.</p>
+        </section>
+
+        <section class="grid" aria-label="Ejemplo de números numerológicos">
+        <article class="card">
+          <h3>Vida</h3>
+          <div class="numero" aria-label="7">7</div>
+          <div class="mini">Número de propósito y análisis profundo.</div>
+        </article>
+
+        <article class="card">
+          <h3>Expresión</h3>
+          <div class="numero">3</div>
+          <div class="mini">Creatividad, comunicación y energía social.</div>
+        </article>
+
+        <article class="card">
+          <h3>Alma</h3>
+          <div class="numero">5</div>
+          <div class="mini">Libertad, cambios y búsqueda personal.</div>
+        </article>
+
+        <article class="card">
+          <h3>Compatibilidad</h3>
+          <div class="numero">86%</div>
+          <div class="mini">Alineación emocional y espiritual.</div>
+        </article>
+        </section>
+
+        <section class="panel" aria-labelledby="summaryTitle">
+          <h2 id="summaryTitle">Resumen del perfil</h2>
+          <div class="lista">
+            <div class="item">
+              <span>Tipo de energía</span>
+              <span class="pill info">Intuitiva</span>
+            </div>
+            <div class="item">
+              <span>Fortaleza principal</span>
+              <span class="pill">Liderazgo</span>
+            </div>
+            <div class="item">
+              <span>Reto personal</span>
+              <span class="pill warning">Control emocional</span>
+            </div>
+          </div>
+          <p class="note" role="note">Vista ilustrativa con datos de ejemplo. Inicia sesión en el panel principal para consultar tu información.</p>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
